@@ -1,19 +1,28 @@
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const en = document.documentElement.lang === 'en';
+
+  // Idioma: recuerda la elección y redirige a la versión equivalente
+  const pref = (() => { try { return localStorage.getItem('lang'); } catch (e) { return null; } })();
+  const other = document.querySelector('.lang-switch a:not([aria-current])');
+  if (other && pref && pref !== document.documentElement.lang) { location.replace(other.href + location.hash); return; }
+  document.querySelectorAll('.lang-switch a').forEach(a => a.addEventListener('click', () => { try { localStorage.setItem('lang', a.lang); } catch (e) {} }));
 
   // Nav
   const nav = document.getElementById('nav');
   const onScroll = () => nav.classList.toggle('scrolled', scrollY > 10);
   addEventListener('scroll', onScroll, {passive:true}); onScroll();
   const btn = document.getElementById('menuBtn'), menu = document.getElementById('menu');
-  const setMenu = o => { menu.classList.toggle('open', o); btn.setAttribute('aria-expanded', o); btn.setAttribute('aria-label', o ? 'Cerrar menú' : 'Abrir menú'); };
+  const setMenu = o => { menu.classList.toggle('open', o); btn.setAttribute('aria-expanded', o); btn.setAttribute('aria-label', o ? (en ? 'Close menu' : 'Cerrar menú') : (en ? 'Open menu' : 'Abrir menú')); };
   btn.addEventListener('click', () => setMenu(!menu.classList.contains('open')));
   menu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
   addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // Typed keywords
-  const words = ['machine learning','genómica','transcriptómica espacial','bioestadística','modelos predictivos','alta dimensionalidad · p ≫ n','repertorios inmunológicos','datos composicionales'];
+  const words = en
+    ? ['machine learning','genomics','spatial transcriptomics','biostatistics','predictive models','high dimensionality · p ≫ n','immune repertoires','compositional data']
+    : ['machine learning','genómica','transcriptómica espacial','bioestadística','modelos predictivos','alta dimensionalidad · p ≫ n','repertorios inmunológicos','datos composicionales'];
   const el = document.getElementById('typed');
   if (el && !reduce) {
     let w = 0, i = words[0].length, del = true;
